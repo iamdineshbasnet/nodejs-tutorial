@@ -20,21 +20,15 @@ const userSchema = new Schema({
     type: String,
     required: true
   },
-  confirmPassword: {
-    type: String,
-    required: true,
-    validate: {
-      validator: function(v) {
-        return v === this.password;
-      },
-      message: props => `Passwords do not match!`
-    }
-  },
   createdAt:{
     type: Date,
     default: Date.now
   }
 })
+
+userSchema.methods.comparePassword = async function(candidatePassword) {
+  return await bcrypt.compare(candidatePassword, this.password);
+};
 
 // Hash the password before saving
 userSchema.pre('save', async function(next) {
@@ -44,7 +38,6 @@ userSchema.pre('save', async function(next) {
   try {
     const hash = await bcrypt.hash(user.password, 10)
     user.password = hash
-    user.confirmPassword = hash
     next()
   } catch (error) {
     return next(error)
