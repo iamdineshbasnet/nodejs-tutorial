@@ -37,6 +37,17 @@ router.patch('/:id', async (req, res) => {
 		res.status(500).send(error);
 	}
 });
+// update task
+router.put('/:id', async (req, res) => {
+	const { task, status } = req.body;
+	const { id } = req.params;
+	try {
+		const updateTask = await Todo.findByIdAndUpdate(id, { task, status});
+		res.send(updateTask);
+	} catch (error) {
+		res.status(500).send(error);
+	}
+});
 
 // delete task
 router.delete('/:id', async (req, res) => {
