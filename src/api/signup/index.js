@@ -7,10 +7,26 @@ const User = require('../../models/users');
 router.post('/', async (req, res) => {
 	const { email, username, password } = req.body;
 	try {
-		const user = new User({ email, username, password });
-		user.password = bcrypt.hashSync(password, 10);
+		// check all the data
+		if (!(username && email && password)) {
+			res.status(400).send('All fields are required.');
+		}
+		// check if user already exist
+		const isExist = await User.findOne({ email });
+		if (isExist) {
+			res.status(400).send('user already exist');
+		}
+
+		// encrypt the password
+		const encryptPwd = await bcrypt.hash(password, 10);
+
+		// save the user in DB
+		const user = new User({ email, username, password: encryptPwd });
 		await user.save();
-		res.status(201).send(user);
+
+		user.password = undefined;
+		res.status(201).json(user);
+
 	} catch (error) {
 		res.status(500).send(error);
 	}
